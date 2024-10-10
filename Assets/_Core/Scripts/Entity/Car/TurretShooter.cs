@@ -7,6 +7,8 @@ namespace Game
 {
     public class TurretShooter : MonoBehaviour
     {
+        public event Action OnShoot;
+
         [SerializeField] Transform _spawnPoint;
         [SerializeField] Projectile _projectilePrefab;
         [Space]
@@ -61,6 +63,8 @@ namespace Game
 
             projectile.gameObject.SetActive(true);
             projectile.StartMove(_spawnPoint.forward);
+
+            OnShoot?.Invoke();
         }
 
         private IEnumerator Shooting()

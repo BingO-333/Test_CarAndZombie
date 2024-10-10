@@ -5,10 +5,12 @@ namespace Game
 {
     public class Car : MonoBehaviour, IDamagable
     {
-        public event Action OnHealthChanged;
+        public event Action OnTakeDamage;
         public event Action OnDie;
 
         public bool IsDeath => _currentHealth <= 0;
+
+        [SerializeField] HealthView _healthView;
 
         [SerializeField] float _baseHealth = 100f;
 
@@ -17,7 +19,7 @@ namespace Game
         private void Awake()
         {
             _currentHealth = _baseHealth;
-            OnHealthChanged?.Invoke();
+            _healthView.Setup(this);
         }
 
         public HealthInfo GetHealthInfo() => new HealthInfo(_currentHealth, _baseHealth);
@@ -28,7 +30,7 @@ namespace Game
                 return;
 
             _currentHealth -= damage;
-            OnHealthChanged?.Invoke();
+            OnTakeDamage?.Invoke();
 
             if (IsDeath)
                 Explode();

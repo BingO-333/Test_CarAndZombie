@@ -4,6 +4,7 @@ namespace Game
     {
         Start,
         Running,
-        Ended
+        Win,
+        Lose
     }
 }

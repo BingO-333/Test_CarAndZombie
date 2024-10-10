@@ -13,10 +13,13 @@ namespace Game
 
         [SerializeField] Page_SUI _startPage;
         [SerializeField] Page_SUI _runningPage;
-        [SerializeField] Page_SUI _endedPage;
+        [SerializeField] Page_SUI _losePage;
+        [SerializeField] Page_SUI _winPage;
         [Space]
-        [SerializeField] Button _startButton;
-        [SerializeField] Button _restartButton;
+        [SerializeField] Transform _viewsContainer;
+        [SerializeField] FollowerHealthView _followerHealthViewPrefab;
+
+        private MonoPool<FollowerHealthView> _followerHealthViewsPool;
 
         private LevelManager _levelManager;
 
@@ -27,28 +30,42 @@ namespace Game
 
         private void Awake()
         {
+            _followerHealthViewsPool = new MonoPool<FollowerHealthView>(SpawnFollowerHealthView);
+
             _levelManager.OnStateChanged += UpdatePageByLevelState;
             UpdatePageByLevelState();
-
-            _startButton.onClick.AddListener(() => OnStartButtonPressed?.Invoke());
-            _restartButton.onClick.AddListener(() => OnRestartButtonPressed?.Invoke());
         }
+
+        public void StartClick() => OnStartButtonPressed?.Invoke();
+        public void RestartClick() => OnRestartButtonPressed?.Invoke();
+
+        public FollowerHealthView GetFollowerHealthView() => _followerHealthViewsPool.Get();
 
         private void UpdatePageByLevelState()
         {
             _startPage.StartHiding();
             _runningPage.StartHiding();
-            _endedPage.StartHiding();
+            _winPage.StartHiding();
+            _losePage.StartHiding();
 
             Page_SUI activePage = _levelManager.CurrentState switch
             {
                 ELevelState.Start => _startPage,
                 ELevelState.Running => _runningPage,
-                ELevelState.Ended => _endedPage,
-                _ => _endedPage
+                ELevelState.Win => _winPage,
+                ELevelState.Lose => _losePage,
+                _ => _losePage
             };
 
             activePage.StartShowing();
+        }
+
+        private FollowerHealthView SpawnFollowerHealthView()
+        {
+            FollowerHealthView spawnedFHV = Instantiate(_followerHealthViewPrefab, _viewsContainer);
+            spawnedFHV.gameObject.SetActive(false);
+
+            return spawnedFHV;
         }
     }
 }

@@ -22,8 +22,8 @@ namespace Game
 
         private void Awake()
         {
-            _car.OnDie += EndGame;
-            _finishTrigger.OnCarFinish += EndGame;
+            _car.OnDie += Lose;
+            _finishTrigger.OnCarFinish += Win;
         }
 
         private void StartGame()
@@ -31,9 +31,20 @@ namespace Game
             ChangeState(ELevelState.Running);
         }
 
-        private void EndGame()
+        private void Lose()
         {
-            ChangeState(ELevelState.Ended);
+            if (CurrentState == ELevelState.Win || CurrentState == ELevelState.Lose)
+                return;
+
+            ChangeState(ELevelState.Lose);
+        }
+
+        private void Win()
+        {
+            if (CurrentState == ELevelState.Win || CurrentState == ELevelState.Lose)
+                return;
+
+            ChangeState(ELevelState.Win);
         }
 
         private void Restart()

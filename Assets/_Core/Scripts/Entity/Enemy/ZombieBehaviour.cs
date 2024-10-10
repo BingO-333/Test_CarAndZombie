@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Zenject;
 
 namespace Game
 {
@@ -17,6 +18,14 @@ namespace Game
 
             _viewTrigger.TriggerEnter += OnViewTriggerEnter;
             _viewTrigger.TriggerExit += OnViewTriggerExit;
+        }
+
+        public void DisableBehaviour()
+        {
+            _viewTrigger.gameObject.SetActive(false);
+            DisableMovement();
+
+            OnFollowStateChanged?.Invoke(false);
         }
 
         private void OnViewTriggerEnter(Collider collider)

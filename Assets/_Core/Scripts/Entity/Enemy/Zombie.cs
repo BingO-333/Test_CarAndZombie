@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 namespace Game
@@ -7,20 +8,26 @@ namespace Game
     {
         public event Action<Zombie> OnDespawn;
 
-        public event Action OnHealthChanged;
+        public event Action OnTakeDamage;
         public event Action OnDie;
 
         public bool IsDeath => _currentHealth <= 0;
+
+        public ZombieBehaviour Behaviour { get; private set; }
 
         [SerializeField] float _baseHealth = 50f;
         [SerializeField] float _damage = 10f;
 
         private float _currentHealth;
 
+        private void Awake()
+        {
+            Behaviour = GetComponent<ZombieBehaviour>();
+        }
+
         private void OnEnable()
         {
             _currentHealth = _baseHealth;
-            OnHealthChanged?.Invoke();
         }
 
         private void OnTriggerEnter(Collider other)
@@ -40,7 +47,7 @@ namespace Game
                 return;
 
             _currentHealth -= damage;
-            OnHealthChanged?.Invoke();
+            OnTakeDamage?.Invoke();
 
             if (IsDeath)
                 Die();
@@ -49,6 +56,7 @@ namespace Game
         private void Die()
         {
             gameObject.SetActive(false);
+
             OnDie?.Invoke();
             OnDespawn?.Invoke(this);
         }

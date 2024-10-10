@@ -1,4 +1,5 @@
 using UnityEngine;
+using Zenject;
 
 namespace Game
 {
@@ -13,7 +14,16 @@ namespace Game
 
         private Zombie[] _spawnedZombies;
 
+        private LevelManager _levelManager;
+        private IInstantiator _instantiator;
+
         private Vector3 _zoneOffset;
+
+        [Inject] void Construct(IInstantiator instantiator, LevelManager levelmanager)
+        {
+            _instantiator = instantiator;
+            _levelManager = levelmanager;
+        }
 
         private void Awake()
         {
@@ -21,6 +31,17 @@ namespace Game
             SpawnZombies();
 
             _despawnTrigger.TriggerEnter += OnDespawnTriggerEnter;
+
+            _levelManager.OnStateChanged += TryDisableZombieBehaviours;
+        }
+
+        private void TryDisableZombieBehaviours()
+        {
+            if (_levelManager.CurrentState != ELevelState.Win && _levelManager.CurrentState != ELevelState.Lose)
+                return;
+
+            foreach (var zombie in _spawnedZombies)
+                zombie.Behaviour.DisableBehaviour();
         }
 
         private void Update()
@@ -46,7 +67,8 @@ namespace Game
             for (int i = 0; i < _zombiesCount; i++)
             {
                 Zombie spawnedZombie = 
-                    Instantiate(_zombiePrefab, _spawnZone.GetRandomPointInArea(), Quaternion.identity, zombiesContainer);
+                    _instantiator.InstantiatePrefabForComponent<Zombie>
+                    (_zombiePrefab, _spawnZone.GetRandomPointInArea(), Quaternion.identity, zombiesContainer);
 
                 spawnedZombie.transform.Rotate(0, Random.Range(0, 360), 0);
                 spawnedZombie.OnDespawn += RespawnZombie;
